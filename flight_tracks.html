@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' /> 
+    <title>Fly to a location</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.4.1/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.4.1/mapbox-gl.css' rel='stylesheet' />
+    
+    <style>
+        /* CSS for a full page map   */
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+        
+        /* The CSS for the "Fly" button  */
+        #fly {
+            display: block; /* displays over the map */
+            position: fixed; /* displays over the map */
+            top: 40px;
+            left: 40px;
+            margin: 0px auto; 
+            width: 30%;
+            height: 50px;
+            padding: 10px;
+            border: solid;
+            border-radius: 10px;
+            border-width: 5px;
+            border-color: #00b365;
+            font-size: 24px;
+            font-family: "Copperplate", "Monaco", "Lucida Console";
+            text-align: center;
+            font-weight: bold;
+            color: white;
+            background: #0090b8;
+        }
+    </style>
+</head>
+<body>
+
+    <div id='map'></div>
+    <br/>
+    <button id='fly'>Switch between Oregon and SoCal</button>
+    
+    
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1Ijoia3dpbGxpMjAiLCJhIjoiY2xnNWZrMGY4MDJrcTNlbjV1em84eDZocSJ9.LNEAISrKR3Fsq2QeBq-tgg';
+        
+        /* Variables for the marker and fly-to locations*/
+        var clickCounter = 0; // keep track of the number of times the user has clicked
+        var flyLocations = [[-117.5, 33.5],[-122.9, 44.7]]; // Where the map will fly to
+		var bounds = [
+		    [-142, 31], // Southwest coordinates
+		    [-99.7, 48.5] // Northeast coordinates 
+		];
+        
+        
+        // initialize the map
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/kwilli20/climwzuhj002801q4boqfad2r',
+            center: [-121, 40.25],
+            zoom: 5,
+            maxBounds: bounds
+        });
+        
+        map.on('load', function(){
+            map.addLayer({
+                id: 'cali_flights',
+                type: "line",
+              source: {
+                  type: 'vector',
+                  url: 'mapbox://kwilli20.bj0uuqqo'
+              },
+                'source-layer': 'cali_flights-590izs',
+              paint: {
+                  'line-color': '#00b365',
+                  'line-width': 2
+              }
+            });    
+        });
+        
+        map.on('load', function(){
+            map.addLayer({
+                id: 'ore_flights',
+                type: "line",
+              source: {
+                  type: 'vector',
+                  url: 'mapbox://kwilli20.8il850ij'
+              },
+                'source-layer': 'ore_flights-1w04qv',
+              paint: {
+                  'line-color': '#00b365',
+                  'line-width': 2
+              }
+            });    
+        });          
+        
+        // Add popups and markers to the map
+        var kcvo = new mapboxgl.Popup()
+            .setText('KCVO-Corvallis Airport');
+
+        var marker = new mapboxgl.Marker({color:'red'})
+            .setLngLat([-123.28, 44.51]) // put the marker at the first starting position in the flyLocations array [lng, lat]
+            .setPopup(kcvo) //add the popup to the marker 
+            .addTo(map);
+        
+        var ksee = new mapboxgl.Popup()
+            .setText('KSEE-Gillespie Field');
+
+        var marker2 = new mapboxgl.Marker({color:'red'})
+            .setLngLat([-116.97, 32.83]) // put the marker at the second starting position in the flyLocations array [lng, lat]
+            .setPopup(ksee) //add the popup to the marker 
+            .addTo(map);
+        
+        var kavx = new mapboxgl.Popup()
+            .setText('KAVX-Avalon(Catalina)');
+
+        var marker3 = new mapboxgl.Marker({color:'#00b365'})
+            .setLngLat([-118.42, 33.4]) // put the marker at the third starting position in the flyLocations array [lng, lat]
+            .setPopup(kavx) //add the popup to the marker 
+            .addTo(map);
+        
+        var keug = new mapboxgl.Popup()
+            .setText('KEUG-Eugene Airport');
+
+        var marker4 = new mapboxgl.Marker({color:'#00b365'})
+            .setLngLat([-123.21, 44.12]) // put the marker at the third starting position in the flyLocations array [lng, lat]
+            .setPopup(keug) //add the popup to the marker 
+            .addTo(map);
+        
+        var kbdn = new mapboxgl.Popup()
+            .setText('KBDN-Bend Airport');
+
+        var marker5 = new mapboxgl.Marker({color:'#00b365'})
+            .setLngLat([-121.2,44.1]) // put the marker at the third starting position in the flyLocations array [lng, lat]
+            .setPopup(kbdn) //add the popup to the marker 
+            .addTo(map);
+        
+        var khio = new mapboxgl.Popup()
+            .setText('KHIO-Hillsboro Airport');
+
+        var marker6 = new mapboxgl.Marker({color:'#00b365'})
+            .setLngLat([-122.95, 45.54]) // put the marker at the third starting position in the flyLocations array [lng, lat]
+            .setPopup(khio) //add the popup to the marker 
+            .addTo(map);
+        
+        var ksan = new mapboxgl.Popup()
+            .setText('KSAN-Lindbergh Field(San Diego)');
+
+        var marker7 = new mapboxgl.Marker({color:'#00b365'})
+            .setLngLat([-117.2, 32.73]) // put the marker at the third starting position in the flyLocations array [lng, lat]
+            .setPopup(ksan) //add the popup to the marker 
+            .addTo(map);
+        
+        var ksna = new mapboxgl.Popup()
+            .setText('KSNA-John Wayne Airport(Irvine)');
+
+        var marker8 = new mapboxgl.Marker({color:'#00b365'})
+            .setLngLat([-117.87, 33.68]) // put the marker at the third starting position in the flyLocations array [lng, lat]
+            .setPopup(ksna) //add the popup to the marker 
+            .addTo(map);
+        
+        var ksle = new mapboxgl.Popup()
+            .setText('KSLE-Salem Airport');
+
+        var marker8 = new mapboxgl.Marker({color:'#00b365'})
+            .setLngLat([-123, 44.91]) // put the marker at the third starting position in the flyLocations array [lng, lat]
+            .setPopup(ksle) //add the popup to the marker 
+            .addTo(map);
+        
+        var kcma = new mapboxgl.Popup()
+            .setText('KCMA-Camarillo Airport');
+
+        var marker9 = new mapboxgl.Marker({color:'#00b365'})
+            .setLngLat([-119.1, 34.21]) // put the marker at the third starting position in the flyLocations array [lng, lat]
+            .setPopup(kcma) //add the popup to the marker 
+            .addTo(map);
+        
+        // add a 'Listener' to the div with the ID 'fly', that's the button.
+        document.getElementById('fly').addEventListener('click', function () {
+            console.log("flying to " + flyLocations[clickCounter])
+            map.flyTo({
+                center: flyLocations[clickCounter], // look up the value of the click counter in the flyLocations array.
+                zoom: 8
+            });
+
+            // update the click counter to the next location
+            clickCounter = clickCounter +1;
+            if (clickCounter > flyLocations.length-1) clickCounter = 0; // if the user has clicked more times than the length of the flyLocations array, reset it to 0.
+
+        });
+        
+        
+        </script>
+
+</body>
+</html>
