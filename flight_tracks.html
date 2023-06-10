@@ -4,6 +4,7 @@
     <meta charset='utf-8' /> 
     <title>Fly to a location</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.4.1/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.4.1/mapbox-gl.css' rel='stylesheet' />
     
@@ -32,14 +33,123 @@
             font-weight: bold;
             color: white;
             background: #0090b8;
+            cursor: pointer;
         }
+        
+        .popupImage{
+            width:100%;
+        }
+        
+        /*  stlye for paragraph tags */
+		p {
+			color: white;
+		}
+
+		/* style for heading level 4 tags */
+		h4 {
+			color: black;
+			margin-left: 10px;
+		}
+
+		/*  style for items with the class "LegendContainer" */
+		.LegendContainer {
+			position: absolute;
+			bottom: 20px;
+			left: 20px;
+			z-index: 2;
+			width: 20%;
+			height: 40px;
+			background: RGB(0,70,40);
+			transition: width 2s, height 2s; /* this is the time it takes for the container to transition */
+			border-radius: 7px;
+			text-align: center;
+		}
+
+		/*  style for items with the class "descriptionPanel" */
+		.descriptionPanel {
+			position: absolute;
+			bottom: 65px;
+			left: 20px;
+			z-index: 2;
+			width: 20%;
+			height: 40px;
+			background: RGB(0,70,40);
+			transition: width 2s, height 2s;
+			overflow: hidden;
+			border-radius: 7px;
+		}
+
+		/*  style for items with the class "descriptionPanel" when active */
+		.LegendContainer:active {
+			width: 240px;
+			height: 250px;
+		}
+
+		/* style for items with the class "legendItem" */
+		.legendItem {
+					margin: 0px;
+					padding-left: 10px;
+					display:inline-block;
+					margin:auto;
+					transform: translate(0%, 20%);
+		}
+
+
+		/* style for items with the class "layerDescription" */
+		.layerDescription {
+			color: white;
+			padding-left: 10px;
+		}
+
+		/* sets color for three objects in the legend*/
+		.base {
+							color:red;
+		}
+		.airport{
+							color:#ADD8E6;
+		}
+		
+		.pics {
+							color:yellow;
+		}
+
+		/* style for items with the class "chevron" */
+		.chevron {
+			position: relative;
+			margin-left: 90%;
+			font-size: xx-large;
+			color: white;
+		}
+        
+        
     </style>
 </head>
 <body>
-
     <div id='map'></div>
+	<div class="descriptionPanel" id="descriptionPanel" style="height: 250px;">
+	 <span onClick=panelSelect() id="glyph" class="chevron glyphicon glyphicon-chevron-down"></span>
+	 <hr/>
+	 <h4>Legend and description</h4>
+	 <p style="margin-left: 10px; margin-right: 10px;">
+	   This is a map of all the recorded flight tracks from my personal flying. The vast majority of my flying has been in Southern California and the northwest Oregon, two areas that I have highlighted here. You may navigate between the two using the button in the top left. Data was collected through an ADS-B receiver set up in the plane and collected through an app called Foreflight.
+	 </p>
+	</div>
+	<div class="LegendContainer">
+	 <div class="legendItem">
+		 <span class="base">&#11044;</span>
+		 <span class="layerDescription">Base airport</span>
+	 </div>
+	 <div class="legendItem">
+		 <span class="airport">&#11044;</span>
+		 <span class="layerDescription">Airports</span>
+	 </div>
+	 <div class="legendItem">
+		 <span class="pics">&#11044;</span>
+		 <span class="layerDescription">Flying pictures</span>
+	 </div>
+	</div>
     <br/>
-    <button id='fly'>Switch between Oregon and SoCal</button>
+    <button id='fly'>Click here to switch between Oregon and SoCal</button>
     
     
     <script>
@@ -51,7 +161,7 @@
 		var bounds = [
 		    [-142, 31], // Southwest coordinates
 		    [-99.7, 48.5] // Northeast coordinates 
-		];
+		];//sets coords for bounding box
         
         
         // initialize the map
@@ -59,10 +169,13 @@
             container: 'map',
             style: 'mapbox://styles/kwilli20/climwzuhj002801q4boqfad2r',
             center: [-121, 40.25],
-            zoom: 5,
-            maxBounds: bounds
+            zoom: 5, //initial zoom
+            maxBounds: bounds //sets bounding box
         });
+        /* adds nav controls*/
+        map.addControl(new mapboxgl.NavigationControl());
         
+		/* adds layer for California flights */
         map.on('load', function(){
             map.addLayer({
                 id: 'cali_flights',
@@ -79,7 +192,8 @@
             });    
         });
         
-        map.on('load', function(){
+        /* adds layer for Oregon flights */
+		map.on('load', function(){
             map.addLayer({
                 id: 'ore_flights',
                 type: "line",
@@ -95,7 +209,135 @@
             });    
         });          
         
-        // Add popups and markers to the map
+        // Add popups and markers to the map  
+		
+		// Sets content for what goes in popup
+		var pic1_content = '<h4>Flying over Newport on a flight from Salem to Corvallis</h4>' + '<img class="popupImage" src="https://i.imgur.com/mC50Dcr.jpeg">' ;
+        
+		//creates popup
+        var pic1 = new mapboxgl.Popup()
+            .setHTML(pic1_content)
+        
+		//creates marker
+        var marker10 = new mapboxgl.Marker({color: 'yellow'})
+            .setLngLat([-124.06, 44.62])
+            .setPopup(pic1)
+            .addTo(map);
+        
+        var pic2_content = '<h4>Flying over San Diego Intl Airport on a scenic flight with friends</h4>' + '<img class="popupImage" src="https://i.imgur.com/voNtGfW.jpg">';
+        
+        var pic2 = new mapboxgl.Popup()
+            .setHTML(pic2_content)
+        
+        var marker11 = new mapboxgl.Marker({color: 'yellow'})
+            .setLngLat([-117.18, 32.73])
+            .setPopup(pic2)
+            .addTo(map);
+        
+        var pic3_content = '<h4>Practicing steep turns over El Capitan reservoir</h4>' + '<img class="popupImage" src="https://i.imgur.com/nJdL3m1.jpg">';
+        
+        var pic3 = new mapboxgl.Popup()
+            .setHTML(pic3_content)
+        
+        var marker12 = new mapboxgl.Marker({color: 'yellow'})
+            .setLngLat([-116.79, 32.89])
+            .setPopup(pic3)
+            .addTo(map);
+        
+        var pic4_content = '<h4>Flying to Catalina Island</h4>' + '<img class="popupImage" src="https://i.imgur.com/t1sPO7B.jpg">';
+        
+        var pic4 = new mapboxgl.Popup()
+            .setHTML(pic4_content)
+        
+        var marker13 = new mapboxgl.Marker({color: 'yellow'})
+            .setLngLat([-118.01, 33.435])
+            .setPopup(pic4)
+            .addTo(map);
+        
+        var pic5_content = '<h4>Flying in the Willamette Valley enroute to Hillsboro</h4>' + '<img class="popupImage" src="https://i.imgur.com/ZfD45pG.jpg">';
+        
+        var pic5 = new mapboxgl.Popup()
+            .setHTML(pic5_content)
+        
+        var marker14 = new mapboxgl.Marker({color: 'yellow'})
+            .setLngLat([-123.186, 44.86])
+            .setPopup(pic5)
+            .addTo(map);
+        
+        var pic6_content = '<h4>The view of MCAS Miramar, aka Fightertown USA and the former home of the Top Gun school</h4>' + '<img class="popupImage" src="https://i.imgur.com/cuReGdw.jpg">';
+        
+        var pic6 = new mapboxgl.Popup()
+            .setHTML(pic6_content)
+        
+        var marker15 = new mapboxgl.Marker({color: 'yellow'})
+            .setLngLat([-117.1188, 32.875])
+            .setPopup(pic6)
+            .addTo(map);
+		
+        var kavx = new mapboxgl.Popup()
+            .setText('KAVX-Avalon(Catalina)');
+
+        var marker3 = new mapboxgl.Marker({color:'#ADD8E6'})
+            .setLngLat([-118.42, 33.4]) // put the marker at the third starting position in the flyLocations array [lng, lat]
+            .setPopup(kavx) //add the popup to the marker 
+            .addTo(map);
+        
+        var keug = new mapboxgl.Popup()
+            .setText('KEUG-Eugene Airport');
+
+        var marker4 = new mapboxgl.Marker({color:'#ADD8E6'})
+            .setLngLat([-123.21, 44.12]) // put the marker at the third starting position in the flyLocations array [lng, lat]
+            .setPopup(keug) //add the popup to the marker 
+            .addTo(map);
+        
+        var kbdn = new mapboxgl.Popup()
+            .setText('KBDN-Bend Airport');
+
+        var marker5 = new mapboxgl.Marker({color:'#ADD8E6'})
+            .setLngLat([-121.2,44.1]) // put the marker at the third starting position in the flyLocations array [lng, lat]
+            .setPopup(kbdn) //add the popup to the marker 
+            .addTo(map);
+        
+        var khio = new mapboxgl.Popup()
+            .setText('KHIO-Hillsboro Airport');
+
+        var marker6 = new mapboxgl.Marker({color:'#ADD8E6'})
+            .setLngLat([-122.95, 45.54]) // put the marker at the third starting position in the flyLocations array [lng, lat]
+            .setPopup(khio) //add the popup to the marker 
+            .addTo(map);
+        
+        var ksan = new mapboxgl.Popup()
+            .setText('KSAN-Lindbergh Field(San Diego)');
+
+        var marker7 = new mapboxgl.Marker({color:'#ADD8E6'})
+            .setLngLat([-117.2, 32.73]) // put the marker at the third starting position in the flyLocations array [lng, lat]
+            .setPopup(ksan) //add the popup to the marker 
+            .addTo(map);
+        
+        var ksna = new mapboxgl.Popup()
+            .setText('KSNA-John Wayne Airport(Irvine)');
+
+        var marker8 = new mapboxgl.Marker({color:'#ADD8E6'})
+            .setLngLat([-117.87, 33.68]) // put the marker at the third starting position in the flyLocations array [lng, lat]
+            .setPopup(ksna) //add the popup to the marker 
+            .addTo(map);
+        
+        var ksle = new mapboxgl.Popup()
+            .setText('KSLE-Salem Airport');
+
+        var marker8 = new mapboxgl.Marker({color:'#ADD8E6'})
+            .setLngLat([-123, 44.91]) // put the marker at the third starting position in the flyLocations array [lng, lat]
+            .setPopup(ksle) //add the popup to the marker 
+            .addTo(map);
+        
+        var kcma = new mapboxgl.Popup()
+            .setText('KCMA-Camarillo Airport');
+
+        var marker9 = new mapboxgl.Marker({color:'#ADD8E6'})
+            .setLngLat([-119.1, 34.21]) // put the marker at the third starting position in the flyLocations array [lng, lat]
+            .setPopup(kcma) //add the popup to the marker 
+            .addTo(map);
+		
         var kcvo = new mapboxgl.Popup()
             .setText('KCVO-Corvallis Airport');
 
@@ -112,70 +354,6 @@
             .setPopup(ksee) //add the popup to the marker 
             .addTo(map);
         
-        var kavx = new mapboxgl.Popup()
-            .setText('KAVX-Avalon(Catalina)');
-
-        var marker3 = new mapboxgl.Marker({color:'#00b365'})
-            .setLngLat([-118.42, 33.4]) // put the marker at the third starting position in the flyLocations array [lng, lat]
-            .setPopup(kavx) //add the popup to the marker 
-            .addTo(map);
-        
-        var keug = new mapboxgl.Popup()
-            .setText('KEUG-Eugene Airport');
-
-        var marker4 = new mapboxgl.Marker({color:'#00b365'})
-            .setLngLat([-123.21, 44.12]) // put the marker at the third starting position in the flyLocations array [lng, lat]
-            .setPopup(keug) //add the popup to the marker 
-            .addTo(map);
-        
-        var kbdn = new mapboxgl.Popup()
-            .setText('KBDN-Bend Airport');
-
-        var marker5 = new mapboxgl.Marker({color:'#00b365'})
-            .setLngLat([-121.2,44.1]) // put the marker at the third starting position in the flyLocations array [lng, lat]
-            .setPopup(kbdn) //add the popup to the marker 
-            .addTo(map);
-        
-        var khio = new mapboxgl.Popup()
-            .setText('KHIO-Hillsboro Airport');
-
-        var marker6 = new mapboxgl.Marker({color:'#00b365'})
-            .setLngLat([-122.95, 45.54]) // put the marker at the third starting position in the flyLocations array [lng, lat]
-            .setPopup(khio) //add the popup to the marker 
-            .addTo(map);
-        
-        var ksan = new mapboxgl.Popup()
-            .setText('KSAN-Lindbergh Field(San Diego)');
-
-        var marker7 = new mapboxgl.Marker({color:'#00b365'})
-            .setLngLat([-117.2, 32.73]) // put the marker at the third starting position in the flyLocations array [lng, lat]
-            .setPopup(ksan) //add the popup to the marker 
-            .addTo(map);
-        
-        var ksna = new mapboxgl.Popup()
-            .setText('KSNA-John Wayne Airport(Irvine)');
-
-        var marker8 = new mapboxgl.Marker({color:'#00b365'})
-            .setLngLat([-117.87, 33.68]) // put the marker at the third starting position in the flyLocations array [lng, lat]
-            .setPopup(ksna) //add the popup to the marker 
-            .addTo(map);
-        
-        var ksle = new mapboxgl.Popup()
-            .setText('KSLE-Salem Airport');
-
-        var marker8 = new mapboxgl.Marker({color:'#00b365'})
-            .setLngLat([-123, 44.91]) // put the marker at the third starting position in the flyLocations array [lng, lat]
-            .setPopup(ksle) //add the popup to the marker 
-            .addTo(map);
-        
-        var kcma = new mapboxgl.Popup()
-            .setText('KCMA-Camarillo Airport');
-
-        var marker9 = new mapboxgl.Marker({color:'#00b365'})
-            .setLngLat([-119.1, 34.21]) // put the marker at the third starting position in the flyLocations array [lng, lat]
-            .setPopup(kcma) //add the popup to the marker 
-            .addTo(map);
-        
         // add a 'Listener' to the div with the ID 'fly', that's the button.
         document.getElementById('fly').addEventListener('click', function () {
             console.log("flying to " + flyLocations[clickCounter])
@@ -190,7 +368,21 @@
 
         });
         
-        
+		// Code to be able to close description in bottom left
+		var state = { panelOpen: true };
+
+		function panelSelect(e){
+			if(state.panelOpen){
+			  document.getElementById('descriptionPanel').style.height = '35px';
+			  document.getElementById('glyph').className = "chevron glyphicon glyphicon-chevron-up";
+			  state.panelOpen = false;
+			} else {
+			  document.getElementById('descriptionPanel').style.height = '250px';
+			  document.getElementById('glyph').className = "chevron glyphicon glyphicon-chevron-down";
+			  state.panelOpen = true;
+			}
+		}
+		
         </script>
 
 </body>
